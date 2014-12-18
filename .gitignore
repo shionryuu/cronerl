@@ -1,0 +1,12 @@
+# dir
+.eunit
+.idea
+.rebar
+deps
+ebin
+
+# file
+*.beam
+*.iml
+*~
+
