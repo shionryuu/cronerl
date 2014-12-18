@@ -1,0 +1,19 @@
+language: erlang
+
+# install rebar 2.1.0-pre that supports 'raw' dependencies
+before_install:
+   - wget https://github.com/rebar/rebar/wiki/rebar
+   - chmod +x rebar
+
+before_script:
+  - chmod +x ./rebar
+
+script: "make compile test"
+
+otp_release:
+  - 17.0
+  - R16B03-1
+  - R16B03
+  - R16B02
+  - R16B01
+  - R16B
