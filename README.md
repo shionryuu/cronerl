@@ -1,7 +1,7 @@
 
-# conerl - cron service
+# cronerl - cron service
 
-[![Build Status](https://secure.travis-ci.org/ShionRyuu/conerl.png?branch=master)](https://travis-ci.org/ShionRyuu/conerl)
+[![Build Status](https://secure.travis-ci.org/ShionRyuu/cronerl.png?branch=master)](https://travis-ci.org/ShionRyuu/cronerl)
 
 Cron service implementation in Erlang.
 
