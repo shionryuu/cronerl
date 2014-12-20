@@ -27,8 +27,40 @@
 
 %% API
 -export([
+    parse_file/1,
+    parse_entrys/1,
     parse_entry/4
 ]).
+
+
+%% parse the crontab config file
+parse_file(File) ->
+    case file:consult(File) of
+        {error, enoent} = Error ->
+            error_logger:info_msg("crontab file ~p not exist", [File]),
+            Error;
+        {error, R} = Error ->
+            error_logger:info_msg("crontab file error: ~p", [file:format_error(R)]),
+            Error;
+        {ok, CronTab} ->
+            parse_entrys(CronTab)
+    end.
+
+%% parse all the entrys
+parse_entrys(CronTab) ->
+    Entrys =
+        lists:foldl(fun({Name, Time, MFA, Options} = Entry, Acc) ->
+            case catch parse_entry(Name, Time, MFA, Options) of
+                {ok, CronEntry} ->
+                    [CronEntry | Acc];
+                {error, R} ->
+                    error_logger:info_msg("the line :~p error:~p", [Entry, R]),
+                    Acc
+            end;
+            (_, Acc) ->
+                Acc
+        end, [], CronTab),
+    {ok, Entrys}.
 
 %%
 parse_entry(Name, Time, MFA, Options) ->
