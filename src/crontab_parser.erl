@@ -54,7 +54,7 @@ parse_entrys(CronTab) ->
                 {ok, CronEntry} ->
                     [CronEntry | Acc];
                 {error, R} ->
-                    error_logger:info_msg("the line :~p error:~p", [Entry, R]),
+                    error_logger:info_msg("crontab parsing entry:~p ~nerror:~p", [Entry, R]),
                     Acc
             end;
             (_, Acc) ->
