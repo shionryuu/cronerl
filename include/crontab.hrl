@@ -38,16 +38,16 @@
 -define(DOM_STAR, 1).
 -define(DOW_STAR, 2).
 -define(MIN_STAR, 8).
--define(HR_STAR, 10).
+-define(HRS_STAR, 10).
 
 %%
 -define(FIRST_MIN, 0).
 -define(LAST_MIN, 59).
 -define(MIN_COUNT, (?LAST_MIN - ?FIRST_MIN + 1)).
 
--define(FIRST_HOUR, 0).
--define(LAST_HOUR, 23).
--define(HOUR_COUNT, (?LAST_HOUR - ?FIRST_HOUR + 1)).
+-define(FIRST_HRS, 0).
+-define(LAST_HRS, 23).
+-define(HOUR_COUNT, (?LAST_HRS - ?FIRST_HRS + 1)).
 
 -define(FIRST_DOM, 1).
 -define(LAST_DOM, 31).
@@ -63,7 +63,7 @@
 -define(DOW_COUNT, (?LAST_DOW - ?FIRST_DOW + 1)).
 
 %% Month map
--define(MonthMap, [
+-define(MonMap, [
     {"Jan", 1}, {"Feb", 2}, {"Mar", 3}, {"Apr", 4}, {"May", 5}, {"Jun", 6},
     {"Jul", 7}, {"Aug", 8}, {"Sep", 9}, {"Oct", 10}, {"Nov", 11}, {"Dec", 12}
 ]).
@@ -76,3 +76,11 @@
 
 %% if
 -define(IF(Flag, T, F), case Flag of true -> T; _ -> F end).
+
+%% error
+-define(ERR_MIN, bad_min).
+-define(ERR_HRS, bad_hrs).
+-define(ERR_DOM, bad_dom).
+-define(ERR_MON, bad_mon).
+-define(ERR_DOW, bad_dow).
+

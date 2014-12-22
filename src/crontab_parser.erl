@@ -74,11 +74,11 @@ parse_entry_t(Name, Time, MFA, Options) ->
     check_time(Time),
     check_mfa(MFA),
     {MinSpec, HrsSpec, DomSpec, MonSpec, DowSpec} = Time,
-    {MinFlag, MinBits} = get_spec_bits(MinSpec, ?FIRST_MIN, ?LAST_MIN, [], ?MIN_STAR),
-    {HrsFlag, HrsBits} = get_spec_bits(HrsSpec, ?FIRST_HOUR, ?LAST_HOUR, [], ?HR_STAR),
-    {DomFlag, DomBits} = get_spec_bits(DomSpec, ?FIRST_DOM, ?LAST_DOM, [], ?DOM_STAR),
-    {MonFlag, MonBits} = get_spec_bits(MonSpec, ?FIRST_MON, ?LAST_MON, ?MonthMap, 0),
-    {DowFlag, DowBits} = get_spec_bits(DowSpec, ?FIRST_DOW, ?LAST_DOW, ?DowMap, ?DOW_STAR),
+    {MinFlag, MinBits} = get_spec_bits(MinSpec, ?FIRST_MIN, ?LAST_MIN, [], ?MIN_STAR, ?ERR_MIN),
+    {HrsFlag, HrsBits} = get_spec_bits(HrsSpec, ?FIRST_HRS, ?LAST_HRS, [], ?HRS_STAR, ?ERR_HRS),
+    {DomFlag, DomBits} = get_spec_bits(DomSpec, ?FIRST_DOM, ?LAST_DOM, [], ?DOM_STAR, ?ERR_DOM),
+    {MonFlag, MonBits} = get_spec_bits(MonSpec, ?FIRST_MON, ?LAST_MON, ?MonMap, 0, ?ERR_MON),
+    {DowFlag, DowBits} = get_spec_bits(DowSpec, ?FIRST_DOW, ?LAST_DOW, ?DowMap, ?DOW_STAR, ?ERR_DOW),
     %% make sundays equivilent
     SpDowBits =
         ?IF(bitstring:is_set(DowBits, 0) orelse bitstring:is_set(DowBits, 7),
@@ -102,8 +102,8 @@ check_mfa(_) ->
     erlang:throw({error, invalid_mfa}).
 
 %% get wildcard flag & bits of spec
-get_spec_bits(Spec, Low, High, Map, StarFlag) ->
-    {Star, Zones} = parse_spec(Spec, Low, High, Map),
+get_spec_bits(Spec, Low, High, Map, StarFlag, Err) ->
+    {Star, Zones} = parse_spec(Spec, Low, High, Map, Err),
     Bits =
         lists:foldl(fun({Min, Max, Span}, Acc) ->
             bits_range_set(Acc, Min, Max, Span)
@@ -122,38 +122,38 @@ get_range(Min, Max, Inc) ->
     lists:seq(Min, Max, Inc).
 
 %%
-parse_spec('*', Low, High, _Map) ->
+parse_spec('*', Low, High, _Map, _Err) ->
     {true, [{Low, High, 1}]};
-parse_spec(Int, _Low, _High, _Map) when is_integer(Int) ->
+parse_spec(Int, _Low, _High, _Map, _Err) when is_integer(Int) ->
     {true, [{Int, Int, 1}]};
-parse_spec(Spec, Low, High, Map) when is_list(Spec) ->
+parse_spec(Spec, Low, High, Map, Err) when is_list(Spec) ->
     lists:foldl(fun(Zone, {StarFlag, Acc}) ->
-        {Star, {Min, Max, Span}} = parse_zone(string:tokens(Zone, "-/"), Low, High, Map),
-        check_range(Min, Max, Span),
+        {Star, {Min, Max, Span}} = parse_zone(string:tokens(Zone, "-/"), Low, High, Map, Err),
+        check_range(Min, Max, Span, Err),
         {StarFlag orelse Star, [{Min, Max, Span} | Acc]}
     end, {false, []}, string:tokens(Spec, ","));
-parse_spec(_Spec, _Low, _High, _Map) ->
-    erlang:throw({error, invalid_spec}).
+parse_spec(_Spec, _Low, _High, _Map, Err) ->
+    erlang:throw({error, {Err, invalid_spec}}).
 
 %%
-parse_zone(["*"], Low, High, _Map) ->
+parse_zone(["*"], Low, High, _Map, _Err) ->
     {true, {Low, High, 1}};
-parse_zone(["*", Span], Low, High, Map) ->
+parse_zone(["*", Span], Low, High, Map, _Err) ->
     {true, {Low, High, get_number(Span, Map)}};
-parse_zone([Name], _Low, _High, Map) ->
+parse_zone([Name], _Low, _High, Map, _Err) ->
     Int = get_number(Name, Map),
     {false, {Int, Int, 1}};
-parse_zone([Min, Max], _Low, _High, Map) ->
+parse_zone([Min, Max], _Low, _High, Map, _Err) ->
     {false, {get_number(Min, Map), get_number(Max, Map), 1}};
-parse_zone([Min, Max, Span], _Low, _High, Map) ->
+parse_zone([Min, Max, Span], _Low, _High, Map, _Err) ->
     {false, {get_number(Min, Map), get_number(Max, Map), get_number(Span, Map)}};
-parse_zone(_, _Low, _High, _Map) ->
-    erlang:throw({error, invalid_zone}).
+parse_zone(_, _Low, _High, _Map, Err) ->
+    erlang:throw({error, {Err, invalid_zone}}).
 
 %% check whether is range valid
-check_range(Min, Max, Span) when Min < 0; Max < 0; Span < 0; Max < Min ->
-    erlang:throw({error, invalid_range});
-check_range(_Min, _Max, _Span) ->
+check_range(Min, Max, Span, Err) when Min < 0; Max < 0; Span < 0; Max < Min ->
+    erlang:throw({error, {Err, invalid_range}});
+check_range(_Min, _Max, _Span, _Err) ->
     ok.
 
 %%
