@@ -10,9 +10,11 @@ Cron service implementation in Erlang.
 ```erlang
 application:start(crontab).
 
-crontab_server:add_crontab(1, {'*', "*", '*', '*', '*'}, {io, fmt, ["triggered~n"]}, []).
+crontab_server:add_crontab(1, {'*', "*", '*', '*', '*'}, {io, fmt, ["1 triggered~n"]}, []).
 
-crontab_server:add_crontab(2, {'*', "*", '*', '*', '*'}, {io, format, ["triggered~n"]}, []).
+crontab_server:add_crontab(2, {'*', "*", '*', '*', '*'}, {io, format, ["2 triggered~n"]}, []).
+
+crontab_server:add_crontab(3, {"0-59/20", "22-23", "15-17,20,24", 12, "6,7"}, {io, format, ["3 triggered~n"]}, []).
 
 ```
 
@@ -27,6 +29,4 @@ crontab_server:add_crontab(2, {'*', "*", '*', '*', '*'}, {io, format, ["triggere
 ## License
 
 conerl is available under the [MIT License](http://shionryuu.mit-license.org/).
-
-
 

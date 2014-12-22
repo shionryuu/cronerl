@@ -124,12 +124,13 @@ get_range(Min, Max, Inc) ->
 %%
 parse_spec('*', Low, High, _Map, _Err) ->
     {true, [{Low, High, 1}]};
-parse_spec(Int, _Low, _High, _Map, _Err) when is_integer(Int) ->
+parse_spec(Int, Low, High, _Map, _Err) when is_integer(Int), Int >= Low, Int =< High ->
+    %% check_range(Low, High, Int, Int, 1, _Err),
     {true, [{Int, Int, 1}]};
 parse_spec(Spec, Low, High, Map, Err) when is_list(Spec) ->
     lists:foldl(fun(Zone, {StarFlag, Acc}) ->
         {Star, {Min, Max, Span}} = parse_zone(string:tokens(Zone, "-/"), Low, High, Map, Err),
-        check_range(Min, Max, Span, Err),
+        check_range(Low, High, Min, Max, Span, Err),
         {StarFlag orelse Star, [{Min, Max, Span} | Acc]}
     end, {false, []}, string:tokens(Spec, ","));
 parse_spec(_Spec, _Low, _High, _Map, Err) ->
@@ -151,10 +152,11 @@ parse_zone(_, _Low, _High, _Map, Err) ->
     erlang:throw({error, {Err, invalid_zone}}).
 
 %% check whether is range valid
-check_range(Min, Max, Span, Err) when Min < 0; Max < 0; Span < 0; Max < Min ->
-    erlang:throw({error, {Err, invalid_range}});
-check_range(_Min, _Max, _Span, _Err) ->
-    ok.
+check_range(Low, High, Min, Max, Span, _Err)
+    when Min >= 0, Max >= 0, Span > 0, Max >= Min, Min >= Low, Max =< High ->
+    ok;
+check_range(_Low, _High, _Min, _Max, _Span, Err) ->
+    erlang:throw({error, {Err, invalid_range}}).
 
 %%
 get_number(Val, Map) ->
