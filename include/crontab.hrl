@@ -41,9 +41,9 @@
 -define(HR_STAR, 10).
 
 %%
--define(FIRST_MINUTE, 0).
--define(LAST_MINUTE, 59).
--define(MINUTE_COUNT, (?LAST_MINUTE - ?FIRST_MINUTE + 1)).
+-define(FIRST_MIN, 0).
+-define(LAST_MIN, 59).
+-define(MIN_COUNT, (?LAST_MIN - ?FIRST_MIN + 1)).
 
 -define(FIRST_HOUR, 0).
 -define(LAST_HOUR, 23).
@@ -53,9 +53,9 @@
 -define(LAST_DOM, 31).
 -define(DOM_COUNT, (?LAST_DOM - ?FIRST_DOM + 1)).
 
--define(FIRST_MONTH, 1).
--define(LAST_MONTH, 12).
--define(MONTH_COUNT, (?LAST_MONTH - ?FIRST_MONTH + 1)).
+-define(FIRST_MON, 1).
+-define(LAST_MON, 12).
+-define(MON_COUNT, (?LAST_MON - ?FIRST_MON + 1)).
 
 %% note on DOW: 0 and 7 are both Sunday, for compatibility reasons.
 -define(FIRST_DOW, 0).  %% 0 for Sunday

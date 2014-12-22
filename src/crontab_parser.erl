@@ -74,10 +74,10 @@ parse_entry_t(Name, Time, MFA, Options) ->
     check_time(Time),
     check_mfa(MFA),
     {MinSpec, HrsSpec, DomSpec, MonSpec, DowSpec} = Time,
-    {MinFlag, MinBits} = get_spec_bits(MinSpec, ?FIRST_MINUTE, ?LAST_MINUTE, [], ?MIN_STAR),
+    {MinFlag, MinBits} = get_spec_bits(MinSpec, ?FIRST_MIN, ?LAST_MIN, [], ?MIN_STAR),
     {HrsFlag, HrsBits} = get_spec_bits(HrsSpec, ?FIRST_HOUR, ?LAST_HOUR, [], ?HR_STAR),
     {DomFlag, DomBits} = get_spec_bits(DomSpec, ?FIRST_DOM, ?LAST_DOM, [], ?DOM_STAR),
-    {MonFlag, MonBits} = get_spec_bits(MonSpec, ?FIRST_MONTH, ?LAST_MONTH, ?MonthMap, 0),
+    {MonFlag, MonBits} = get_spec_bits(MonSpec, ?FIRST_MON, ?LAST_MON, ?MonthMap, 0),
     {DowFlag, DowBits} = get_spec_bits(DowSpec, ?FIRST_DOW, ?LAST_DOW, ?DowMap, ?DOW_STAR),
     %% make sundays equivilent
     SpDowBits =
