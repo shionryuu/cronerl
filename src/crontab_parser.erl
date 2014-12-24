@@ -48,19 +48,23 @@ parse_file(File) ->
 
 %% parse all the entrys
 parse_entrys(CronTab) ->
-    Entrys =
-        lists:foldl(fun({Name, Time, MFA, Options} = Entry, Acc) ->
-            case parse_entry(Name, Time, MFA, Options) of
-                {ok, CronEntry} ->
-                    [CronEntry | Acc];
-                {error, R} ->
-                    error_logger:info_msg("crontab parsing entry:~p ~nerror:~p", [Entry, R]),
-                    Acc
-            end;
-            (_, Acc) ->
+    Entrys = lists:foldl(fun(Entry, Acc) ->
+        case parse_entry(Entry) of
+            {ok, CronEntry} ->
+                [CronEntry | Acc];
+            {error, R} ->
+                error_logger:info_msg("crontab parsing entry:~p ~nerror:~p", [Entry, R]),
                 Acc
-        end, [], CronTab),
+        end
+    end, [], CronTab),
     {ok, Entrys}.
+
+parse_entry({Name, Time, MFA}) ->
+    parse_entry(Name, Time, MFA, []);
+parse_entry({Name, Time, MFA, Options}) ->
+    parse_entry(Name, Time, MFA, Options);
+parse_entry(_) ->
+    {error, ?ERR_FMT}.
 
 %%
 parse_entry(Name, Time, MFA, Options) ->
@@ -80,9 +84,8 @@ parse_entry_t(Name, Time, MFA, Options) ->
     {MonFlag, MonBits} = get_spec_bits(MonSpec, ?FIRST_MON, ?LAST_MON, ?MonMap, 0, ?ERR_MON),
     {DowFlag, DowBits} = get_spec_bits(DowSpec, ?FIRST_DOW, ?LAST_DOW, ?DowMap, ?DOW_STAR, ?ERR_DOW),
     %% make sundays equivilent
-    SpDowBits =
-        ?IF(bitstring:is_set(DowBits, 0) orelse bitstring:is_set(DowBits, 7),
-            bitstring:list_set(DowBits, [0, 7]), DowBits),
+    SpDowBits = ?IF(bitstring:is_set(DowBits, 0) orelse bitstring:is_set(DowBits, 7),
+        bitstring:list_set(DowBits, [0, 7]), DowBits),
     #entry{
         min = MinBits, hour = HrsBits, dom = DomBits, month = MonBits, dow = SpDowBits,
         name = Name, flags = MinFlag bor HrsFlag bor DomFlag bor MonFlag bor DowFlag,
@@ -104,10 +107,9 @@ check_mfa(_) ->
 %% get wildcard flag & bits of spec
 get_spec_bits(Spec, Low, High, Map, StarFlag, Err) ->
     {Star, Zones} = parse_spec(Spec, Low, High, Map, Err),
-    Bits =
-        lists:foldl(fun({Min, Max, Span}, Acc) ->
-            bitstring:range_set(Acc, Min, Max, Span)
-        end, 0, Zones),
+    Bits = lists:foldl(fun({Min, Max, Span}, Acc) ->
+        bitstring:range_set(Acc, Min, Max, Span)
+    end, 0, Zones),
     {if Star -> StarFlag;true -> 0 end, Bits}.
 
 %%
