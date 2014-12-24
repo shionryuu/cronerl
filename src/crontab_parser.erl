@@ -134,7 +134,7 @@ parse_spec(Spec, Low, High, Map, Err) when is_list(Spec) ->
         {StarFlag orelse Star, [{Min, Max, Span} | Acc]}
     end, {false, []}, string:tokens(Spec, ","));
 parse_spec(_Spec, _Low, _High, _Map, Err) ->
-    erlang:throw({error, {Err, invalid_spec}}).
+    erlang:throw({error, Err}).
 
 %%
 parse_zone(["*"], Low, High, _Map, _Err) ->
@@ -149,14 +149,14 @@ parse_zone([Min, Max], _Low, _High, Map, _Err) ->
 parse_zone([Min, Max, Span], _Low, _High, Map, _Err) ->
     {false, {get_number(Min, Map), get_number(Max, Map), get_number(Span, Map)}};
 parse_zone(_, _Low, _High, _Map, Err) ->
-    erlang:throw({error, {Err, invalid_zone}}).
+    erlang:throw({error, Err}).
 
 %% check whether is range valid
 check_range(Low, High, Min, Max, Span, _Err)
     when Min >= 0, Max >= 0, Span > 0, Max >= Min, Min >= Low, Max =< High ->
     ok;
 check_range(_Low, _High, _Min, _Max, _Span, Err) ->
-    erlang:throw({error, {Err, invalid_range}}).
+    erlang:throw({error, Err}).
 
 %%
 get_number(Val, Map) ->
