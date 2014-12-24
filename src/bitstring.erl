@@ -51,3 +51,32 @@ list_set(Bits, List) ->
 
 range_set(Bits, Min, Max, Span) ->
     list_set(Bits, lists:seq(Min, Max, Span)).
+
+%% ============================================================================
+%% Tests
+%% ============================================================================
+
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+set_test() ->
+    1 = set(0, 0), %% 0001
+    8 = set(0, 3), %% 1000
+    ok.
+
+unset_test() ->
+    1 = unset(3, 1), %% 0011
+    3 = unset(7, 2), %% 0111
+    ok.
+
+list_set_test() ->
+    255 = range_set(0, 0, 7, 1), %% 1111 1111
+    11 = list_set(0, [0, 1, 3]), %% 1011
+    ok.
+
+is_set_test() ->
+    Bits = range_set(0, 0, 59, 1), %%
+    [is_set(Bits, I) || I <- lists:seq(0, 59, 1)],
+    ok.
+
+-else.
+-endif.

@@ -50,7 +50,7 @@ parse_file(File) ->
 parse_entrys(CronTab) ->
     Entrys =
         lists:foldl(fun({Name, Time, MFA, Options} = Entry, Acc) ->
-            case catch parse_entry(Name, Time, MFA, Options) of
+            case parse_entry(Name, Time, MFA, Options) of
                 {ok, CronEntry} ->
                     [CronEntry | Acc];
                 {error, R} ->
@@ -152,3 +152,20 @@ get_number(Val, Map) ->
         {Int, []} -> Int;
         _ -> proplists:get_value(Val, Map, -1)
     end.
+
+%% ============================================================================
+%% Tests
+%% ============================================================================
+
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+parse_spec_fail_test() ->
+    {error, ?ERR_MIN} = parse_entry(1, {"0-60", "*", '*', '*', '*'}, {io, format, ["1 triggered~n"]}, []),
+    {error, ?ERR_MIN} = parse_entry(2, {"59,62,63", "*", '*', '*', '*'}, {io, format, ["2 triggered~n"]}, []),
+    {error, ?ERR_HRS} = parse_entry(3, {"0-59/20", "25", '*', '*', '*'}, {io, format, ["3 triggered~n"]}, []),
+    {error, ?ERR_DOM} = parse_entry(4, {"0-59/20", 12, 32, '*', '*'}, {io, format, ["4 triggered~n"]}, []),
+    {error, ?ERR_MON} = parse_entry(5, {"0-59/20", 12, '*', "12,13", '*'}, {io, format, ["5 triggered~n"]}, []),
+    {error, ?ERR_DOW} = parse_entry(6, {"0-59/20", 12, '*', 12, 8}, {io, format, ["6 triggered~n"]}, []),
+    ok.
+-else.
+-endif.
