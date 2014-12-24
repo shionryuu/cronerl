@@ -26,12 +26,12 @@
     name,           %% entry name
     min,            %% minute
     hour,           %% hour
-    dom,            %%
+    dom,            %% day of month
     month,          %% month
-    dow,            %%
-    flags = 0,
-    mfa,            %%
-    options = []
+    dow,            %% day of week
+    flags = 0,      %%
+    mfa,            %% {m, f, a}
+    options = []    %%
 }).
 
 %% wildcard flags
@@ -83,4 +83,6 @@
 -define(ERR_DOM, bad_dom).
 -define(ERR_MON, bad_mon).
 -define(ERR_DOW, bad_dow).
+-define(ERR_FMT, bad_fmt).
+-define(ERR_MFA, bad_mfa).
 

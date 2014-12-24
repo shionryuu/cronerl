@@ -27,7 +27,9 @@
 -export([
     set/2,
     unset/2,
-    is_set/2
+    is_set/2,
+    list_set/2,
+    range_set/4
 ]).
 
 %% set the bit
@@ -41,3 +43,11 @@ unset(Bits, I) ->
 %% is bit set
 is_set(Bits, I) ->
     Bits band (1 bsl I) =/= 0.
+
+list_set(Bits, List) when is_list(List) ->
+    lists:foldl(fun(I, Acc) -> bitstring:set(Acc, I) end, Bits, List);
+list_set(Bits, List) ->
+    erlang:error(badarg, [Bits, List]).
+
+range_set(Bits, Min, Max, Span) ->
+    list_set(Bits, lists:seq(Min, Max, Span)).

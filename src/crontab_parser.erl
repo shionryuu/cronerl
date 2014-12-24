@@ -82,7 +82,7 @@ parse_entry_t(Name, Time, MFA, Options) ->
     %% make sundays equivilent
     SpDowBits =
         ?IF(bitstring:is_set(DowBits, 0) orelse bitstring:is_set(DowBits, 7),
-            bits_list_set(DowBits, [0, 7]), DowBits),
+            bitstring:list_set(DowBits, [0, 7]), DowBits),
     #entry{
         min = MinBits, hour = HrsBits, dom = DomBits, month = MonBits, dow = SpDowBits,
         name = Name, flags = MinFlag bor HrsFlag bor DomFlag bor MonFlag bor DowFlag,
@@ -93,39 +93,27 @@ parse_entry_t(Name, Time, MFA, Options) ->
 check_time({_Min, _Hour, _Dom, _Mon, _Dow}) ->
     ok;
 check_time(_) ->
-    erlang:throw({error, invalid_time}).
+    erlang:throw({error, ?ERR_FMT}).
 
 %% check mfa
 check_mfa({M, F, A}) when is_atom(M), is_atom(F), is_list(A) ->
     ok;
 check_mfa(_) ->
-    erlang:throw({error, invalid_mfa}).
+    erlang:throw({error, ?ERR_MFA}).
 
 %% get wildcard flag & bits of spec
 get_spec_bits(Spec, Low, High, Map, StarFlag, Err) ->
     {Star, Zones} = parse_spec(Spec, Low, High, Map, Err),
     Bits =
         lists:foldl(fun({Min, Max, Span}, Acc) ->
-            bits_range_set(Acc, Min, Max, Span)
+            bitstring:range_set(Acc, Min, Max, Span)
         end, 0, Zones),
     {if Star -> StarFlag;true -> 0 end, Bits}.
-
-%%
-bits_range_set(Bits, Min, Max, Span) ->
-    bits_list_set(Bits, get_range(Min, Max, Span)).
-
-bits_list_set(Bits, List) when is_list(List) ->
-    lists:foldl(fun(I, Acc) -> bitstring:set(Acc, I) end, Bits, List).
-
-%% get range sequence
-get_range(Min, Max, Inc) ->
-    lists:seq(Min, Max, Inc).
 
 %%
 parse_spec('*', Low, High, _Map, _Err) ->
     {true, [{Low, High, 1}]};
 parse_spec(Int, Low, High, _Map, _Err) when is_integer(Int), Int >= Low, Int =< High ->
-    %% check_range(Low, High, Int, Int, 1, _Err),
     {true, [{Int, Int, 1}]};
 parse_spec(Spec, Low, High, Map, Err) when is_list(Spec) ->
     lists:foldl(fun(Zone, {StarFlag, Acc}) ->
@@ -161,8 +149,6 @@ check_range(_Low, _High, _Min, _Max, _Span, Err) ->
 %%
 get_number(Val, Map) ->
     case string:to_integer(Val) of
-        {Int, []} ->
-            Int;
-        _ ->
-            proplists:get_value(Val, Map, -1)
+        {Int, []} -> Int;
+        _ -> proplists:get_value(Val, Map, -1)
     end.
