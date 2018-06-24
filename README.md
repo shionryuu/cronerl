@@ -16,11 +16,14 @@ crontab:add_crontab(2, {'*', "*", '*', '*', '*'}, {io, format, ["2 triggered~n"]
 
 crontab:add_crontab(3, {"0-59/20", "22-23", "15-17,20,24", 12, "6,7"}, {io, format, ["3 triggered~n"]}).
 
+crontab:add_crontab(4, {'*', "*", '*', '*', '*'}, {erlang, exit, [failed]}).
+
+crontab:del_crontab(3).
 ```
 
 ## Config File
 
-```
+```conf
 {1, {'*', "*", '*', '*', '*'}, {io, fmt, ["1 triggered~n"]}}.
 {2, {'*', "*", '*', '*', '*'}, {io, format, ["2 triggered~n"]}}.
 ```
@@ -36,4 +39,3 @@ crontab:add_crontab(3, {"0-59/20", "22-23", "15-17,20,24", 12, "6,7"}, {io, form
 ## License
 
 conerl is available under the [MIT License](http://shionryuu.mit-license.org/).
-

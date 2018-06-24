@@ -45,7 +45,7 @@ is_set(Bits, I) ->
     Bits band (1 bsl I) =/= 0.
 
 list_set(Bits, List) when is_list(List) ->
-    lists:foldl(fun(I, Acc) -> bitstring:set(Acc, I) end, Bits, List);
+    lists:foldl(fun(I, Acc) -> set(Acc, I) end, Bits, List);
 list_set(Bits, List) ->
     erlang:error(badarg, [Bits, List]).
 

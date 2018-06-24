@@ -153,12 +153,15 @@ do_add_crontab(N2E, Name, Time, MFA, Options) ->
 
 %%
 do_del_crontab(N2E0, N2P0, Name, Options) ->
-    case dict:is_key(Name, N2P0) of
-        true ->
-            {_, Pid} = dict:fetch(N2P0, Name),
-            {_, Entry} = dict:fetch(N2E0, Name),
-            try_stop(Entry, Pid, Options),
-            {ok, safe_del(Name, N2E0), safe_del(Name, N2P0)};
+    case dict:find(Name, N2E0) of
+        {ok, Entry} ->
+            case dict:find(Name, N2P0) of
+                {_, Pid} ->
+                    try_stop(Entry, Pid, Options);
+                _ ->
+                    ignore
+            end,
+            {ok, dict:erase(Name, N2E0), dict:erase(Name, N2P0)};
         _ ->
             {error, notfound}
     end.
@@ -168,13 +171,6 @@ try_stop(Entry, Pid, Options) ->
     case proplists:get_value(stop_on_del, Options ++ Opts, false) of
         true -> erlang:exit(Pid, remove);
         _ -> ignore
-    end.
-
-%%
-safe_del(Key, Dict) ->
-    case dict:is_key(Key, Dict) of
-        true -> dict:erase(Key, Dict);
-        _ -> Dict
     end.
 
 %%
@@ -221,23 +217,25 @@ flag_set(Flags, F) ->
 
 %%
 handle_exit(Pid, Rsn, N2E0, N2P0, P2N0) ->
-    Name = dict:fetch(Pid, P2N0),
-    N2E =
-        case Rsn of
-            normal -> N2E0;
-            _ ->
-                error_logger:error_msg("crontab ~w stop due to ~w", [Name, Rsn]),
-                safe_del(Name, N2E0)
-        end,
-    N2P = safe_del(Name, N2P0),
-    P2N = safe_del(Pid, P2N0),
-    {N2E, N2P, P2N}.
-
+    case dict:find(Pid, P2N0) of
+        {ok, Name} ->
+            N2E =
+                case Rsn of
+                    normal -> N2E0;
+                    _ ->
+                        error_logger:error_msg("crontab ~w stop due to ~w", [Name, Rsn]),
+                        dict:erase(Name, N2E0)
+                end,
+            N2P = dict:erase(Name, N2P0),
+            P2N = dict:erase(Pid, P2N0),
+            {N2E, N2P, P2N};
+        _ ->
+            {N2E0, N2P0, P2N0}
+    end.
 
 get_next_tick() ->
     Now = timestamp(),
     Rem = Now rem 60,
-%%     ?IF(Rem =:= 0, 0, (60 - Rem) * 1000).
     (60 - Rem) * 1000.
 
 timestamp() ->
